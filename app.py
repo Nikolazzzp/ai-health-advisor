@@ -1,10 +1,29 @@
-openai.lib._old_api.APIRemovedInV1: This app has encountered an error. The original error message is redacted to prevent data leaks. Full error details have been recorded in the logs (if you're on Streamlit Cloud, click on 'Manage app' in the lower right of your app).
-Traceback:
-File "/mount/src/ai-health-advisor/app.py", line 29, in <module>
-    response = openai.ChatCompletion.create(
-        model="gpt-4o",
-        messages=[{"role": "user", "content": prompt}],
-        temperature=0.7
+import streamlit as st
+from openai import OpenAI
+
+# Inicializace klienta
+client = OpenAI()
+
+def get_health_advice(prompt: str) -> str:
+    response = client.chat.completions.create(
+        model="gpt-4",
+        messages=[
+            {"role": "system", "content": "Jsi zdravotní asistent."},
+            {"role": "user", "content": prompt}
+        ],
+        temperature=0.7,
     )
-File "/home/adminuser/venv/lib/python3.13/site-packages/openai/lib/_old_api.py", line 39, in __call__
-    raise APIRemovedInV1(symbol=self._symbol
+    return response.choices[0].message.content
+
+st.title("AI Personal Health Advisor")
+
+user_input = st.text_area("Napiš svůj dotaz:")
+
+if st.button("Generuj doporučení"):
+    if user_input.strip() == "":
+        st.warning("Prosím, zadej svůj dotaz.")
+    else:
+        with st.spinner("Generuji doporučení..."):
+            advice = get_health_advice(user_input)
+        st.success("Tady je tvoje doporučení:")
+        st.write(advice)
